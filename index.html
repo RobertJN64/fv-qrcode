@@ -52,6 +52,7 @@
 
             <h4>Logo Chooser</h4>
             <input type="file" id="src_image" class="form-control" style="width: 400px;" />
+            <input type="range" class="form-range" id="img-size" min="0" max="144" value="72">
             <br>
 
             <h4>Ouput</h4>
@@ -109,7 +110,7 @@
     base_str = add_url_param(base_str, 'lat', document.getElementById('qrgen-lat').value);
     base_str = add_url_param(base_str, 'lon', document.getElementById('qrgen-lon').value);
     document.getElementById('qrgen-full').innerHTML = base_str;
-    document.getElementById('qr_out').contents = document.getElementById('qrgen-full').innerHTML;
+    document.getElementById('qr_out').contents = base_str;
   }
   document.getElementById('qrgen-base-url').onchange = update
   document.getElementById('qrgen-dest').onchange = update
@@ -117,6 +118,10 @@
   document.getElementById('qrgen-lat').onchange = update
   document.getElementById('qrgen-lon').onchange = update
   update('');
+
+  document.getElementById('img-size').onchange = function (evt) {
+    document.getElementById('out_img').width = document.getElementById('img-size').value;
+  }
 
   document.getElementById('src_image').onchange = function (evt) {
     var tgt = evt.target || window.event.srcElement,
