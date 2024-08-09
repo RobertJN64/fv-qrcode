@@ -3,34 +3,142 @@
 
 <head>
   <title>FV QR Code Generator</title>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
+  <script src="https://unpkg.com/@bitjson/qr-code@1.0.2/dist/qr-code.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <script>
-    var qrcode = new QRCode("qrcode");
-
-    function makeCode() {
-      var gen_url = document.getElementById("gen_url");
-
-      if (!gen_url.value) {
-        alert("URL is empty");
-        gen_url.focus();
-        return;
-      }
-
-      qrcode.makeCode(gen_url.value);
-    }
-
-    makeCode();
-
-  </script>
 </head>
 
 <body>
-  <h2 style="text-align: center">Future Velo QR Code Generator</h2>
-  <input id="gen_url" type="text" value="https://e-bikefleet.futurevelo.com"><br />
-  <button onclick="makeCode()">Generate</button>
-  <div id="qrcode"></div>
+  <div class="container-fluid">
+    <nav class="navbar navbar-expand-md navbar-dark" style="background-color: black;">
+      <div class="container-fluid">
+        <div class="g-0 align-items-center row">
+          <div class="col-auto"><img height="40px" src="fv logo.png"><span class="ms-2 navbar-brand">Future Velo
+              Taxi Service</span></div>
+        </div>
+      </div>
+    </nav><br>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-body">
+            <h4>URL Configuration</h4>
+
+            <div class="d-flex justify-content-start">
+              <p class="my-auto">Base URL: </p>
+              <input id="qrgen-base-url" value="https://e-bikefleet.futurevelo.com/taxi/passenger"
+                style="width: 400px; margin-right: 5px; margin-left: 10px;">
+            </div><br>
+            <div class="d-flex justify-content-start">
+              <p class="my-auto">Pre-filled Destination: </p>
+              <input id="qrgen-dest" value="" style="width: 300px; margin-right: 5px; margin-left: 10px;">
+            </div><br>
+            <div class="d-flex justify-content-start">
+              <p class="my-auto">QR Code ID: </p>
+              <input id="qrgen-id" value="" style="width: 300px; margin-right: 5px; margin-left: 10px;">
+            </div><br>
+            <div class="d-flex justify-content-start">
+              <p class="my-auto">Lat: </p>
+              <input id="qrgen-lat" value="" style="width: 200px; margin-right: 5px; margin-left: 10px;">
+            </div><br>
+            <div class="d-flex justify-content-start">
+              <p class="my-auto">Lon: </p>
+              <input id="qrgen-lon" value="" style="width: 200px; margin-right: 5px; margin-left: 10px;">
+            </div><br>
+
+            <button class="btn btn-primary">Generate</button><br><br>
+
+            <h4>Logo Chooser</h4>
+            <input type="file" id="src_image" class="form-control" style="width: 400px;" />
+            <br>
+
+            <h4>Ouput</h4>
+
+            <textarea class="form-control" id="qrgen-full" rows="2" disabled style="width: 100%;"></textarea>
+            <br>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-body">
+            <div>
+              <qr-code id="qr_out" contents="https://e-bikefleet.futurevelo.com/taxi/passenger" style="
+              width: 400px;
+              height: 400px;
+              margin: 2em auto;
+              background-color: #fff;
+            " />
+              <img id='out_img' src="fv logo.png" slot="icon" width="72" />
+            </div>
+            <p>Take a screenshot of the QR code with 'windows key + shift + s' or 'shift + command + 4'</p>
+            <p>
+              Pre-filled destination sets the default destination for the passenger page.
+              QR Code ID is recorded in the database when the request is placed.
+              Lat and Lon are used if passenger does not have GPS.
+              <b>All parameters are optional!</b>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
+<script>
+  function add_url_param(curl, key, val) {
+    if (!val) {
+      return curl;
+    }
+    if (curl.includes('?')) {
+      p = '&'
+    }
+    else {
+      p = '?'
+    }
+    return curl + p + key + '=' + encodeURIComponent(val);
+  }
+
+  function update(evt) {
+    var base_str = document.getElementById('qrgen-base-url').value;
+    base_str = add_url_param(base_str, 'dest', document.getElementById('qrgen-dest').value);
+    base_str = add_url_param(base_str, 'qrid', document.getElementById('qrgen-id').value);
+    base_str = add_url_param(base_str, 'lat', document.getElementById('qrgen-lat').value);
+    base_str = add_url_param(base_str, 'lon', document.getElementById('qrgen-lon').value);
+    document.getElementById('qrgen-full').innerHTML = base_str;
+    document.getElementById('qr_out').contents = document.getElementById('qrgen-full').innerHTML;
+  }
+  document.getElementById('qrgen-base-url').onchange = update
+  document.getElementById('qrgen-dest').onchange = update
+  document.getElementById('qrgen-id').onchange = update
+  document.getElementById('qrgen-lat').onchange = update
+  document.getElementById('qrgen-lon').onchange = update
+  update('');
+
+  document.getElementById('src_image').onchange = function (evt) {
+    var tgt = evt.target || window.event.srcElement,
+      files = tgt.files;
+
+    if (!FileReader) {
+      alert("Dynamic images aren't supported by your browser.");
+    }
+
+    // FileReader support
+    if (files && files.length) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        document.getElementById('out_img').src = fr.result;
+      }
+      fr.readAsDataURL(files[0]);
+    }
+  }
+
+
+</script>
 
 </html>
+
+</qr-code>
